@@ -130,7 +130,7 @@ class CardDavBackend
 
     /**
      * VCard File URL Extension
-     * 
+     *
      * @var string
      */
     private $url_vcard_extension = '.vcf';
@@ -172,11 +172,11 @@ class CardDavBackend
 
     /**
      * Follow redirects (Location Header)
-     * 
+     *
      * @var boolean
      */
     private $follow_redirects = true;
-    
+
     /**
      * Maximum redirects to follow
      *
@@ -277,7 +277,7 @@ class CardDavBackend
     {
       $this->url_vcard_extension = $extension;
     }
- 
+
     /**
      * Sets authentication information
      *
@@ -377,6 +377,29 @@ class CardDavBackend
         );
     }
 
+    /**
+    * Gets a clean vCard from the CardDAV server
+    *
+    * @param    string  $vcard_name vCard file name on the CardDAV server
+    * @return   string              vCard (text/vcard)
+    */
+    public function getVcardUrl($vcard_name)
+    {
+        echo "  get " . $this->url . $vcard_name . "\n";
+        $result     = $this->query($this->url . $vcard_name, 'GET');
+
+        switch ($result['http_code'])
+        {
+            case 200:
+            case 207:
+                return $result['response'];
+        }
+
+        throw new \Exception(
+            "Woops, something's gone wrong! The CardDAV server returned the http status code {$result['http_code']}.",
+            self::EXCEPTION_WRONG_HTTP_STATUS_CODE_GET_VCARD
+        );
+    }
     /**
      * Gets a vCard + XML from the CardDAV Server
      *
@@ -554,8 +577,8 @@ class CardDavBackend
             foreach ($xml->response as $response) {
               if ((preg_match('/vcard/', $response->propstat->prop->getcontenttype) || preg_match('/vcf/', $response->href)) &&
                   !$response->propstat->prop->resourcetype->collection) {
-                    $id = basename($response->href);
-                    $id = str_replace($this->url_vcard_extension, null, $id);
+                    $url_base = basename($response->href);
+                    $id = str_replace($this->url_vcard_extension, null, $url_base);
 
                     if (!empty($id)) {
                         $simplified_xml->startElement('element');
@@ -564,7 +587,7 @@ class CardDavBackend
                             $simplified_xml->writeElement('last_modified', $response->propstat->prop->getlastmodified);
 
                         if ($include_vcards === true) {
-                            $simplified_xml->writeElement('vcard', $this->getVcard($id));
+                            $simplified_xml->writeElement('vcard', $this->getVcardUrl($url_base));
                         }
                         $simplified_xml->endElement();
                     }
