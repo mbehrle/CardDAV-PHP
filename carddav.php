@@ -328,9 +328,11 @@ class CardDavBackend
         $result = $this->query($this->url, 'PROPFIND');
 
         // for OpenXchange/Appsuite
-        $content = '<?xml version="1.0" encoding="UTF-8" ?><D:sync-collection xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav"><D:sync-token></D:sync-token><D:prop><D:getcontenttype/><D:getetag/><D:allprop/><C:address-data><C:allprop/></C:address-data></D:prop><C:filter/></D:sync-collection>';
-        $content_type = 'application/xml';
-        //$result = $this->query($this->url, 'REPORT', $content, $content_type);
+        if ( empty($result['response']) && stripos($result['header'], "Openexchange") !== FALSE ) {
+            $content = '<?xml version="1.0" encoding="UTF-8" ?><D:sync-collection xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav"><D:sync-token></D:sync-token><D:prop><D:getcontenttype/><D:getetag/><D:allprop/><C:address-data><C:allprop/></C:address-data></D:prop><C:filter/></D:sync-collection>';
+            $content_type = 'application/xml';
+            $result = $this->query($this->url, 'REPORT', $content, $content_type);
+        }
 
         // DEBUG: print the response of the carddav-server
         //print_r($result);
@@ -677,7 +679,8 @@ class CardDavBackend
 
         $return = array(
             'response'      => $response,
-            'http_code'         => $http_code
+            'http_code'         => $http_code,
+            'header'         => $header
         );
 
         if ($this->debug === true) {
