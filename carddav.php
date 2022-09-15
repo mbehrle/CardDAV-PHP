@@ -363,7 +363,7 @@ class CardDavBackend
     */
     public function getVcard($vcard_id)
     {
-        $vcard_id   = str_replace($this->url_vcard_extension, null, $vcard_id);
+        $vcard_id   = str_replace($this->url_vcard_extension, '', $vcard_id);
         $result     = $this->query($this->url . $vcard_id . $this->url_vcard_extension, 'GET');
 
         switch ($result['http_code'])
@@ -410,7 +410,7 @@ class CardDavBackend
      */
     public function getXmlVcard($vcard_id)
     {
-        $vcard_id = str_replace($this->url_vcard_extension, null, $vcard_id);
+        $vcard_id = str_replace($this->url_vcard_extension, '', $vcard_id);
 
         $xml = new XMLWriter();
         $xml->openMemory();
@@ -477,7 +477,7 @@ class CardDavBackend
      */
     private function cleanVcard($vcard)
     {
-        $vcard = str_replace("\t", null, $vcard);
+        $vcard = str_replace("\t", '', $vcard);
 
         return $vcard;
     }
@@ -580,12 +580,12 @@ class CardDavBackend
               if ((preg_match('/vcard/', $response->propstat->prop->getcontenttype) || preg_match('/vcf/', $response->href)) &&
                   !$response->propstat->prop->resourcetype->collection) {
                     $url_base = basename($response->href);
-                    $id = str_replace($this->url_vcard_extension, null, $url_base);
+                    $id = str_replace($this->url_vcard_extension, '', $url_base);
 
                     if (!empty($id)) {
                         $simplified_xml->startElement('element');
                             $simplified_xml->writeElement('id', $id);
-                            $simplified_xml->writeElement('etag', str_replace('"', null, $response->propstat->prop->getetag));
+                            $simplified_xml->writeElement('etag', str_replace('"', '', $response->propstat->prop->getetag));
                             $simplified_xml->writeElement('last_modified', $response->propstat->prop->getlastmodified);
 
                         if ($include_vcards === true) {
@@ -602,7 +602,7 @@ class CardDavBackend
                         $href = null;
                     }
 
-                        $url = str_replace($this->url_parts['path'], null, $this->url) . $href;
+                        $url = str_replace($this->url_parts['path'], '', $this->url) . $href;
                         $simplified_xml->startElement('addressbook_element');
                         $simplified_xml->writeElement('display_name', $response->propstat->prop->displayname);
                         $simplified_xml->writeElement('url', $url);
@@ -627,10 +627,10 @@ class CardDavBackend
     private function cleanResponse($response)
     {
         $response = utf8_encode($response);
-        $response = str_replace('D:', null, $response);
-        $response = str_replace('d:', null, $response);
-        $response = str_replace('C:', null, $response);
-        $response = str_replace('c:', null, $response);
+        $response = str_replace('D:', '', $response);
+        $response = str_replace('d:', '', $response);
+        $response = str_replace('C:', '', $response);
+        $response = str_replace('c:', '', $response);
 
         return $response;
     }
